@@ -218,15 +218,15 @@
 (function () {
   var links = [].slice.call(document.querySelectorAll('.toc a'));
   var heads = links.map(function (a) { return document.getElementById(a.getAttribute('href').slice(1)); });
-  var ticking = false;
+  var timer = null;
   function update() {
-    ticking = false;
+    timer = null;
     var line = window.scrollY + Math.min(160, window.innerHeight * 0.25), idx = 0;
     heads.forEach(function (h, i) { if (h && h.getBoundingClientRect().top + window.scrollY <= line) idx = i; });
     if (window.innerHeight + window.scrollY >= document.documentElement.scrollHeight - 2) idx = heads.length - 1;
     links.forEach(function (a, i) { a.classList.toggle('active', i === idx); });
   }
-  window.addEventListener('scroll', function () { if (!ticking) { ticking = true; requestAnimationFrame(update); } }, { passive: true });
+  window.addEventListener('scroll', function () { if (timer === null) timer = setTimeout(update, 40); }, { passive: true });
   window.addEventListener('resize', update);
   update();
 })();
