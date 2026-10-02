@@ -12,7 +12,11 @@
   h3 { font-size: 1.1rem; margin-top: 2.1rem; }
   h4 { font-size: 1rem; margin-top: 1.7rem; }
   .sub { font-size: 1.1rem; color: #444; margin-top: 0; }
-  .authors { color: #666; font-style: italic; margin: 1rem 0 1.6rem; }
+  .authors { color: #333; font-size: 1.05rem; margin: .9rem 0 .15rem; }
+  .authors sup, .affiliations sup { font-size: .68em; margin-left: .08em; }
+  .affiliations { display: flex; flex-wrap: wrap; gap: 1.6rem; color: #666; margin: 0 0 .35rem; }
+  .affiliations p { margin: 0; }
+  .status { color: #666; font-style: italic; margin: 0 0 1.6rem; }
   .abstract { background: #f6f4ee; border: 1px solid #e2ddd0; border-radius: 6px; padding: .9rem 1.2rem; }
   img { max-width: 100%; display: block; margin: 1rem auto; }
   .row { display: flex; gap: 1rem; flex-wrap: wrap; align-items: flex-start; }
@@ -79,7 +83,9 @@
 
 <h1>Rephrase Before You Act</h1>
 <p class="sub">Characterizing and Mitigating Language Sensitivity in Vision-Language-Action Models</p>
-<p class="authors">Mikey Watts (Independent Researcher) &middot; Yuchen Cui (UCLA) &middot; under review &middot; arXiv preprint coming soon</p>
+<p class="authors">Mikey Watts<sup>1</sup> &middot; Yuchen Cui<sup>2</sup></p>
+<div class="affiliations"><p><sup>1</sup>Independent Researcher</p><p><sup>2</sup>UCLA</p></div>
+<p class="status">under review &middot; arXiv preprint coming soon</p>
 
 <h2 id="abstract">Abstract</h2>
 <p class="abstract">Vision-language-action models (VLAs) are strikingly sensitive to instruction phrasing and do not inherit the language robustness of the vision-language models they are built on. A one-word edit can move success by tens of points: &pi;<sub>0.5</sub> turns on a LIBERO stove 100% of the time for &ldquo;switch on the stove&rdquo; and 2% for &ldquo;switch on the hot plate&rdquo;, and a &pi;<sub>0</sub> checkpoint finetuned with rephrase augmentation still shows swings of up to 61 points. We characterize this sensitivity with statistically tested single-edit swings and an oracle phrase search, which shows that phrasing alone nearly closes the 21-point gap between in-distribution and out-of-distribution tasks. We then reduce it without modifying the policy. Because the sensitivity is systematic, it can be expressed as explicit rules: we score many phrasings of a few training tasks, have a large language model distill the evidence into ten to twenty rephrasing rules, and at deployment rewrite each incoming instruction once under these rules. The rules improve the frozen &pi;<sub>0</sub> by 16 to 27% relative on twelve held-out tasks across adversarial, VLM-generated, and human-generated phrasings, with gains concentrated on out-of-distribution tasks. The pipeline replicates on &pi;<sub>0.5</sub> and LIBERO, lifting in-finetune success from 93.6% to 97.8%. The method requires no retraining and no per-step verification, and applies zero-shot to unseen tasks and instructions.</p>
