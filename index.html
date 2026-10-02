@@ -50,19 +50,41 @@
   .bib pre { margin: 0; font-size: .85rem; line-height: 1.45; }
   .bib button { position: absolute; top: .6rem; right: .6rem; font: inherit; font-size: .8rem; padding: .2rem .6rem;
                 border: 1px solid #c9c2b2; border-radius: 4px; background: #fff; color: #444; cursor: pointer; }
+  .toc { position: fixed; top: 7rem; left: calc(50% + 26rem + 2.2rem); width: 11rem; display: flex; flex-direction: column;
+         font-size: .84rem; line-height: 1.35; z-index: 10; }
+  .toc a { color: #9a9488; text-decoration: none; padding: .28rem 0 .28rem .8rem; border-left: 2px solid #e2ddd0;
+           transition: color .15s, border-color .15s; }
+  .toc a.sub { padding-left: 1.6rem; font-size: .8rem; }
+  .toc a:hover { color: #555; }
+  .toc a.active { color: #222; border-left-color: #3F6B52; }
+  h2, h3 { scroll-margin-top: 1.2rem; }
+  @media (max-width: 1200px) { .toc { display: none; } }
   footer { margin-top: 3rem; font-size: .85rem; color: #888; border-top: 1px solid #e2ddd0; padding-top: 1rem; }
 </style>
 </head>
 <body>
 
+<nav class="toc" aria-label="Contents">
+  <a href="#abstract">Abstract</a>
+  <a href="#sensitivity">Language sensitivity</a>
+  <a href="#swings" class="sub">Single-edit swings</a>
+  <a href="#oracles" class="sub">Oracles</a>
+  <a href="#mitigating">Mitigating it</a>
+  <a href="#method" class="sub">Our method</a>
+  <a href="#results" class="sub">Results</a>
+  <a href="#libero" class="sub">&pi;<sub>0.5</sub> and LIBERO</a>
+  <a href="#conclusions" class="sub">Conclusions</a>
+  <a href="#citation">Citation</a>
+</nav>
+
 <h1>Rephrase Before You Act</h1>
 <p class="sub">Characterizing and Mitigating Language Sensitivity in Vision-Language-Action Models</p>
-<p class="authors">Mikey Watts &middot; Yuchen Cui &middot; under review &middot; arXiv preprint coming soon</p>
+<p class="authors">Mikey Watts (Independent Researcher) &middot; Yuchen Cui (UCLA) &middot; under review &middot; arXiv preprint coming soon</p>
 
-<h2>Abstract</h2>
+<h2 id="abstract">Abstract</h2>
 <p class="abstract">Vision-language-action models (VLAs) are strikingly sensitive to instruction phrasing and do not inherit the language robustness of the vision-language models they are built on. A one-word edit can move success by tens of points: &pi;<sub>0.5</sub> turns on a LIBERO stove 100% of the time for &ldquo;switch on the stove&rdquo; and 2% for &ldquo;switch on the hot plate&rdquo;, and a &pi;<sub>0</sub> checkpoint finetuned with rephrase augmentation still shows swings of up to 61 points. We characterize this sensitivity with statistically tested single-edit swings and an oracle phrase search, which shows that phrasing alone nearly closes the 21-point gap between in-distribution and out-of-distribution tasks. We then reduce it without modifying the policy. Because the sensitivity is systematic, it can be expressed as explicit rules: we score many phrasings of a few training tasks, have a large language model distill the evidence into ten to twenty rephrasing rules, and at deployment rewrite each incoming instruction once under these rules. The rules improve the frozen &pi;<sub>0</sub> by 16 to 27% relative on twelve held-out tasks across adversarial, VLM-generated, and human-generated phrasings, with gains concentrated on out-of-distribution tasks. The pipeline replicates on &pi;<sub>0.5</sub> and LIBERO, lifting in-finetune success from 93.6% to 97.8%. The method requires no retraining and no per-step verification, and applies zero-shot to unseen tasks and instructions.</p>
 
-<h2>Language sensitivity of vision-language-action models</h2>
+<h2 id="sensitivity">Language sensitivity of vision-language-action models</h2>
 <p>A vision-language-action model (VLA) is a robot controller. It looks at a camera image, reads a short written instruction such as &ldquo;put the carrot on the plate&rdquo;, and moves the robot arm. VLAs are built on top of vision-language models, the same kind of model behind chat assistants that can look at pictures, so you might expect them to understand an instruction however it is worded. Often they do not. Changing one word, without changing the meaning, can turn a task the robot almost always gets right into one it almost always gets wrong. Three examples, measured on the same scenes with the same random seeds, so the wording is the only difference:</p>
 <p class="pair"><img src="assets/scene_eggplant_sponge.jpg" alt="scene"><span><span class="good">69%</span> &ldquo;<span class="hi">purple eggplant</span> goes on the sponge&rdquo;
 &nbsp;vs.&nbsp; <span class="bad">8%</span> &ldquo;<span class="lo">eggplant</span> goes on the sponge&rdquo;</span></p>
@@ -73,7 +95,7 @@
 <p>Throughout, a <em>task</em> is one thing the robot is asked to do in one scene, and the <em>success rate</em> is the share of attempts in which it finished. We study two recent VLAs, &pi;<sub>0</sub> and &pi;<sub>0.5</sub>, on two standard simulated test beds of tabletop tasks, Bridge and LIBERO.</p>
 <p>We measure the sensitivity in two ways: <em>single-edit swings</em>, pairs of instructions that differ by one edit, and <em>oracles</em>, the best instruction we can find for each task.</p>
 
-<h3>Single-edit swings</h3>
+<h3 id="swings">Single-edit swings</h3>
 <p>A single-edit swing is a pair of instructions that differ by a single edit, one word or even one capital letter, where the success rate changes by more than chance can explain. Below, videos of eleven of them, replayed side by side. The percentages on the title card are the measured rates from the full evaluation, so a replay can differ from them by a box or two.</p>
 <div class="grids">
 <video controls muted playsinline preload="metadata" poster="assets/videos/pair1_pepsi_on_plate.jpg" src="assets/videos/pair1_pepsi_on_plate.mp4"></video>
@@ -96,7 +118,7 @@
        <p class="cap">&pi;<sub>0.5</sub> on LIBERO: 15 sets over 13 tasks, 50 attempts per wording.</p></div>
 </div>
 
-<h3>Oracles</h3>
+<h3 id="oracles">Oracles</h3>
 <p>The second measurement: for each task we search for the best wording we can find, which we call the task&rsquo;s <em>oracle instruction</em>, and compare it with the other ways the task can be worded. The search is simple. A vision-language model proposes 16 rephrasings, the robot tries each one many times, and the next round of proposals sees the scores so far; after three rounds we keep the best. The oracle is then re-measured on fresh attempts so that luck in the search does not inflate it.</p>
 <p id="groups">The instruction groups we compare, which come up again in the results:</p>
 <ul>
@@ -113,12 +135,12 @@
        <p class="cap">&pi;<sub>0.5</sub> on 28 LIBERO tasks, 50 scenes each. Thin bars: tasks the model was trained on (left, 10) and tasks it was not (right, 18). On trained tasks, adversarial wording drops success from 97% to 47%. On tasks that are not in the training set, the wording barely matters (52, 50, and 48%), yet the oracle still finds headroom in both (99% and 66%).</p></div>
 </div>
 
-<h2>Mitigating language sensitivity</h2>
+<h2 id="mitigating">Mitigating language sensitivity</h2>
 <p>A common and effective fix is <em>rephrase augmentation</em>: during training, each demonstration is labeled with several different wordings, so the model sees more variety. The &pi;<sub>0</sub> we study was trained this way, and it helps: on the human-written instructions in the chart below, it is worth about 2 points. But as the examples above show, large swings remain. We build on top of that fix with a method that changes nothing inside the robot&rsquo;s model; it is explained in the next section. The chart below compares the two in one setting, human-written instructions with Claude as the applier, the model that rewrites each instruction: what rephrase augmentation buys, and what our method adds on top.</p>
 <img src="assets/pi0_human_ingredients.png" alt="what rephrase augmentation and our rules each add on human-written instructions">
 <p class="cap">Success on the 363 human-written instructions for the 12 held-out Bridge tasks, 24 scenes each. Left to right: &pi;<sub>0</sub> trained without rephrase augmentation; &pi;<sub>0</sub> trained with it; adding an applier, a vision-language model that rewrites each instruction, with no rules; adding our distilled rules. Thin bars are the in-distribution (left) and out-of-distribution (right) tasks. The rules bar is the average over three rulebooks.</p>
 
-<h3>Our method</h3>
+<h3 id="method">Our method</h3>
 <p>Our key observation is that the sensitivity is systematic rather than random. The same kinds of wording help or hurt across many tasks, so the pattern can be written down as rules. The method has three steps:</p>
 <ol>
   <li><strong>Gather evidence.</strong> Take a handful of training tasks. A vision-language model writes many rephrasings of each, the robot tries every one, and we record how often each wording works.</li>
@@ -149,7 +171,7 @@
 </div>
 <p class="cap">A live copy of one survey item; nothing typed here is sent anywhere. The <a href="survey/index.html">full survey</a>, with every task clip, is also available as a replica.</p>
 
-<h3>Results and experiments</h3>
+<h3 id="results">Results and experiments</h3>
 <p>We test on &pi;<sub>0</sub> with 12 held-out Bridge tasks that contributed no evidence, 24 scenes each. Three different models serve as the applier: Claude Fable 5, Gemini (the gemini-pro-latest model as of September 2026), and Qwen3.5-9B, an open-weights model that runs on a local GPU.</p>
 <p>The rules come in three kinds of rulebook, which differ only in the evidence the rule-writer saw:</p>
 <ul>
@@ -165,12 +187,12 @@
 <img src="assets/rules_dashboard_panel_orig.png" alt="main results: canonical instructions">
 <p class="cap">Four charts, one per instruction group; within each, one bar group per applier. Dashed red line: the unmodified robot. Grey bar: the applier with no rules. Green bars: the out-of-finetune, both, and in-finetune rulebooks, each averaged over three draws. Thin bars to either side: in-distribution (left, 5 tasks) and out-of-distribution (right, 7). The canonical chart has one instruction per task, so it is noisy and should be read with caution.</p>
 
-<h3>The same method on &pi;<sub>0.5</sub> and LIBERO</h3>
+<h3 id="libero">The same method on &pi;<sub>0.5</sub> and LIBERO</h3>
 <p>To check that this is not a one-model result, we repeated the whole pipeline on &pi;<sub>0.5</sub> and LIBERO: a fresh sealed set of 20 tasks, 10 that the model was trained on and 10 it was not, with 10 natural rephrasings per task written by Gemini, evidence from single-edit pairs on other tasks only, Gemini as the applier, and three independently distilled rulebooks. On the trained tasks the rulebooks lift success from 93.6% to 97.8%, and all three land on the same two fixes: write &ldquo;stove&rdquo; instead of &ldquo;hot plate&rdquo; or &ldquo;burner&rdquo;, and &ldquo;plate&rdquo; instead of &ldquo;dish&rdquo;. On the 10 tasks it was not trained on, none of the three rulebooks changes success measurably (&minus;0.5 to +0.3 points, p &ge; 0.47), which matches the oracle chart above: on tasks it was not trained on, &pi;<sub>0.5</sub> barely reacts to the wording.</p>
 <img src="assets/site_pi05_replication.png" alt="pi0.5 on LIBERO: no rephraser, no-rules applier, and rulebooks">
 <p class="cap">&pi;<sub>0.5</sub> on the 10 sealed LIBERO tasks inside its training set: 100 natural rephrasings written by a vision-language model (Gemini, gemini-pro-latest), 50 scenes each, Gemini as the applier. Dashed red: the unmodified robot. Grey: the applier with no rules. Green: the rulebooks, averaged over three draws. Each of the three rulebooks gains 4.1 to 4.3 points (p &le; 0.005, paired permutation test over the 100 base instructions); the no-rules applier gains 0.1 (p = 0.87). The 10 out-of-finetune tasks are not charted: there the rulebooks differ from the unmodified robot by &minus;0.5 to +0.3 points (p &ge; 0.47) and the no-rules applier gains 1.6 (p = 0.006).</p>
 
-<h3>Conclusions</h3>
+<h3 id="conclusions">Conclusions</h3>
 <ul>
   <li>VLAs are very sensitive to wording, and the sensitivity is systematic. On &pi;<sub>0</sub> the best wording nearly closes the 21-point gap between in-distribution and out-of-distribution tasks, so much of the apparent generalization gap is a wording gap.</li>
   <li>It can be reduced without touching the robot&rsquo;s model. Evidence from a few training tasks, distilled by a language model into 10 to 20 explicit rules, improves a frozen &pi;<sub>0</sub> by 16 to 27% relative on held-out tasks, with the gains concentrated out-of-distribution.</li>
@@ -178,7 +200,7 @@
   <li>The sensitivity looks like a product of finetuning. On LIBERO, swings were far easier to find on tasks &pi;<sub>0.5</sub> was finetuned on: 44% of the candidate pairs we tested there showed a significant swing, against 5% on the other tasks. This &pi;<sub>0.5</sub> was finetuned on one wording per task, with no rephrase augmentation. Our hypothesis is that finetuning makes the model latch onto the exact wordings it was trained on, so one changed word can break the match.</li>
 </ul>
 
-<h3>Citation</h3>
+<h3 id="citation">Citation</h3>
 <div class="bib">
 <button type="button" onclick="navigator.clipboard.writeText(document.getElementById('bibtex').innerText).then(()=>{this.textContent='Copied';setTimeout(()=>this.textContent='Copy',1500)})">Copy</button>
 <pre id="bibtex">@misc{watts2026rephrase,
@@ -192,5 +214,22 @@
 </div>
 
 <footer>More: <a href="rules.html">rule snapshots</a> &middot; code, complete rulebooks, prompts, and swing data in the <a href="https://github.com/sttawm/phrase-rl">code repository</a> &middot; <a href="survey/index.html">the survey replica</a>.</footer>
+<script>
+(function () {
+  var links = [].slice.call(document.querySelectorAll('.toc a'));
+  var heads = links.map(function (a) { return document.getElementById(a.getAttribute('href').slice(1)); });
+  var ticking = false;
+  function update() {
+    ticking = false;
+    var line = window.scrollY + Math.min(160, window.innerHeight * 0.25), idx = 0;
+    heads.forEach(function (h, i) { if (h && h.getBoundingClientRect().top + window.scrollY <= line) idx = i; });
+    if (window.innerHeight + window.scrollY >= document.documentElement.scrollHeight - 2) idx = heads.length - 1;
+    links.forEach(function (a, i) { a.classList.toggle('active', i === idx); });
+  }
+  window.addEventListener('scroll', function () { if (!ticking) { ticking = true; requestAnimationFrame(update); } }, { passive: true });
+  window.addEventListener('resize', update);
+  update();
+})();
+</script>
 </body>
 </html>

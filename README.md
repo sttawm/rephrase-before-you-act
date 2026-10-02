@@ -9,8 +9,8 @@ here, do not link here from it, and do not copy this repo's history into it.
 
 ## Finishing touches (for the authors)
 
-- [ ] Author line (`<p class="authors">`): confirm the author list and order, add affiliations and
-      personal/lab links.
+- [ ] Author line (`<p class="authors">`): confirm the author list and order; affiliations are in
+      (Independent Researcher, UCLA); add personal/lab links if wanted.
 - [ ] Paper link: replace "arXiv preprint coming soon" in the author line with the arXiv link once
       posted; add the same link to the footer. (The submission PDF is deliberately not hosted here.)
 - [ ] BibTeX (`<pre id="bibtex">`): confirm names, add the arXiv identifier (`eprint`/`archivePrefix`)
